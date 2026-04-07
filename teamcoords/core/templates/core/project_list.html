@@ -1,0 +1,49 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+
+<!-- Заголовок -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Мои проекты</h2>
+    <a href="{% url 'project-create' %}" class="btn btn-primary">Новый проект</a>
+</div>
+
+<!-- Группировка проектов по статусу -->
+{% regroup object_list by get_status_display as projects_by_status %}
+
+{% for status_group in projects_by_status %}
+    <h4 class="mt-4 mb-3 text-muted">
+        {{ status_group.grouper }} <!-- Название группы (например, "Активный") -->
+    </h4>
+    
+    <div class="row">
+        {% for project in status_group.list %}
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="{% url 'project-detail' project.pk %}" class="text-decoration-none text-dark">
+                            {{ project.title }}
+                        </a>
+                    </h5>
+                    <p class="card-text text-muted small">
+                        {{ project.description|truncatewords:10 }}
+                    </p>
+                    <a href="{% url 'project-detail' project.pk %}" class="btn btn-sm btn-outline-primary">
+                        Открыть
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <!-- Если в группе нет проектов, ничего не выводим -->
+        {% endfor %}
+    </div>
+{% empty %}
+    <!-- Если проектов нет вообще -->
+    <div class="alert alert-info text-center">
+        У вас пока нет проектов. Создайте первый!
+    </div>
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container mt-5" style="max-width: 500px;">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h4>Подтверждение удаления</h4>
+        </div>
+        <div class="card-body">
+            <p class="lead">Вы уверены, что хотите удалить проект "<strong>{{ object.title }}</strong>"?</p>
+            <p class="text-danger">Это действие необратимо. Все задачи, связанные с проектом, будут также удалены.</p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger w-100">Да, удалить проект</button>
+            </form>
+            <a href="{% url 'project-detail' object.pk %}" class="btn btn-link w-100 mt-2">Отмена</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,154 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Левая колонка: Форма задачи -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>{% if form.instance.pk %}Редактирование задачи{% else %}Новая задача{% endif %}</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Вывод ошибок формы -->
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            Пожалуйста, исправьте ошибки.
+                            {% for field in form %}
+                                {% if field.errors %}
+                                    <br><strong>{{ field.label }}:</strong> {{ field.errors.0 }}
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Поле Проект -->
+                        <div class="mb-3">
+                            <label class="form-label">Проект</label>
+                            {{ form.project }}
+                        </div>
+
+                        <!-- Поле Название -->
+                        <div class="mb-3">
+                            <label class="form-label">Название</label>
+                            <input type="text" class="form-control" name="title" value="{{ form.title.value|default:'' }}" required>
+                        </div>
+
+                        <!-- Поле Описание -->
+                        <div class="mb-3">
+                            <label class="form-label">Описание</label>
+                            <textarea class="form-control" name="description" rows="3">{{ form.description.value|default:'' }}</textarea>
+                        </div>
+
+                        <!-- Поле Статус -->
+                        <div class="mb-3">
+                            <label class="form-label">Статус</label>
+                            <select name="status" class="form-select">
+                                {% for choice_value, choice_label in form.fields.status.choices %}
+                                    <option value="{{ choice_value }}" {% if form.status.value == choice_value %}selected{% endif %}>
+                                        {{ choice_label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Поле Исполнитель -->
+                        <div class="mb-3">
+                            <label class="form-label">Исполнитель</label>
+                            {{ form.assigned_to }}
+                        </div>
+                        
+                        <!-- Поле Срок -->
+                        <div class="mb-3">
+                            <label class="form-label">Срок выполнения</label>
+                            <input type="date" class="form-control" name="deadline" value="{{ form.deadline.value|date:'Y-m-d'|default:'' }}">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Сохранить</button>
+                        
+                        <!-- Ссылка Назад -->
+                        <div class="text-center mt-2">
+                            {% if project %}
+                                <a href="{% url 'project-detail' project.pk %}" class="btn btn-link">Назад к проекту</a>
+                            {% else %}
+                                <a href="{% url 'task-list' %}" class="btn btn-link">Назад к списку</a>
+                            {% endif %}
+                        </div>
+                        
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка: Комментарии и История -->
+        <div class="col-md-6">
+            
+            <!-- 1. Блок Комментарии -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5>Обсуждение и файлы</h5>
+                </div>
+                <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+                    {% if form.instance.pk %}
+                        {% for comment in comments %}
+                        <div class="mb-3 border-bottom pb-2">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ comment.author.username }}</strong>
+                                <small class="text-muted">{{ comment.created_at|date:"d.m H:i" }}</small>
+                            </div>
+                            <p class="mb-1">{{ comment.text|linebreaksbr }}</p>
+                            {% if comment.file %}
+                                <a href="{{ comment.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">📎 Файл</a>
+                            {% endif %}
+                        </div>
+                        {% empty %}
+                        <p class="text-center text-muted">Пока нет комментариев.</p>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted">Комментарии можно добавить после сохранения задачи.</p>
+                    {% endif %}
+                </div>
+                
+                {% if form.instance.pk %}
+                <div class="card-footer">
+                    <form action="{% url 'add-comment' object.pk %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <textarea name="text" class="form-control mb-2" rows="2" placeholder="Ваш комментарий..."></textarea>
+                        <input type="file" name="file" class="form-control form-control-sm mb-2">
+                        <button type="submit" class="btn btn-success btn-sm w-100">Отправить</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 2. Блок История изменений (НОВОЕ) -->
+            {% if form.instance.pk %}
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5>История изменений</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for log in task_history %}
+                        <li class="list-group-item py-2">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">{{ log.created_at|date:"d.m H:i" }}</small>
+                                <small class="fw-bold">{{ log.user.username|default:"Система" }}</small>
+                            </div>
+                            <span>{{ log.description }}</span>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-center text-muted py-3">История пуста</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

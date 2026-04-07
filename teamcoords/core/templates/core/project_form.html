@@ -1,0 +1,60 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Создать новый проект</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Вывод общих ошибок формы -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <!-- Поле Название -->
+                        <div class="mb-3">
+                            <label for="id_title" class="form-label">Название проекта</label>
+                            <input type="text" class="form-control" name="title" id="id_title" value="{{ form.title.value|default:'' }}" required>
+                            {% if form.title.errors %}
+                                <small class="text-danger">{{ form.title.errors.0 }}</small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Поле Описание -->
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">Описание</label>
+                            <textarea class="form-control" name="description" id="id_description" rows="3">{{ form.description.value|default:'' }}</textarea>
+                        </div>
+
+                        <!-- ПОЛЕ СТАТУС (Добавлено) -->
+                        <div class="mb-3">
+                            <label for="id_status" class="form-label">Статус</label>
+                            <select class="form-select" name="status" id="id_status">
+                                <option value="active" {% if form.status.value == 'active' %}selected{% endif %}>Активный</option>
+                                <option value="completed" {% if form.status.value == 'completed' %}selected{% endif %}>Завершен</option>
+                                <option value="frozen" {% if form.status.value == 'frozen' %}selected{% endif %}>Заморожен</option>
+                            </select>
+                            {% if form.status.errors %}
+                                <small class="text-danger">{{ form.status.errors.0 }}</small>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Создать проект</button>
+                    </form>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="{% url 'project-list' %}" class="btn btn-link">Отмена</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
