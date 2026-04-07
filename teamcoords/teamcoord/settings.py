@@ -1,20 +1,28 @@
+import os
 from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-your-secret-key-here' # Можешь оставить как есть или сгенерировать
+# Берем из переменных окружения Render (настроим ниже), если нет — берем дефолтную
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key-here')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# На Render DEBUG обязательно должен быть False, иначе будет белая страница (ошибка 500)
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+# РАБОТА С RENDER: Автоматически добавляем домен Render в разрешенные
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    os.environ.get('RENDER_EXTERNAL_HOSTNAME', ''), # Магическая переменная Render'а
+]
 
 # Application definition
-ROOT_URLCONF = 'teamcoord.urls'  # <-- ОБЯЗАТЕЛЬНО
-
-WSGI_APPLICATION = 'teamcoord.wsgi.application' # <-- ОБЯЗАТЕЛЬНО
+ROOT_URLCONF = 'teamcoord.urls'
+WSGI_APPLICATION = 'teamcoord.wsgi.application'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -23,7 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core',  # Наше приложение
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -53,26 +61,19 @@ TEMPLATES = [
     },
 ]
 
+# БАЗА ДАННЫХ ДЛЯ RENDER
+# Локально будет использовать SQLite, а на Render подключится к PostgreSQL через URL
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}'
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 LANGUAGE_CODE = 'ru-ru'
@@ -80,14 +81,16 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# СТАТИКА (используем современный синтаксис Path без os.path)
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# МЕДИА (картинки и файлы юзеров)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'project-list'
 LOGOUT_REDIRECT_URL = 'login'
-
-import os
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
