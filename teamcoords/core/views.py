@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.http import HttpResponseForbidden
 from .models import Project, Task, Comment, ActionLog
+from .forms import ProjectForm
 
 # --- Проекты ---
 
@@ -23,6 +24,7 @@ class ProjectListView(LoginRequiredMixin, ListView):
 
 class ProjectCreateView(LoginRequiredMixin, CreateView):
     model = Project
+    form_class = ProjectForm
     fields = ['title', 'description', 'status']
     template_name = 'core/project_form.html'
     success_url = reverse_lazy('project-list')
