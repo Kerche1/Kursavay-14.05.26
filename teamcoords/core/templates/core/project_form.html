@@ -10,9 +10,14 @@
                 </div>
                 <div class="card-body">
                     <!-- Вывод общих ошибок формы -->
-                    {% if form.non_field_errors %}
+                    {% if form.errors %}
                         <div class="alert alert-danger">
-                            {{ form.non_field_errors }}
+                            <h5>Пожалуйста, исправьте следующие ошибки:</h5>
+                            <ul>
+                                {% for field, errors in form.errors.items %}
+                                    <li><strong>{{ field.label }}:</strong> {{ errors }}</li>
+                                {% endfor %}
+                            </ul>
                         </div>
                     {% endif %}
 
