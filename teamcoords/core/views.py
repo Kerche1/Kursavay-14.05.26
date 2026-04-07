@@ -131,6 +131,21 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         )
         return response
 
+class TaskDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Task
+    template_name = 'core/task_confirm_delete.html'
+    success_url = reverse_lazy('task-list')
+
+    def test_func(self):
+        task = self.get_object()
+        # ЛОГИКА ПРОВЕРКИ:
+        # Разрешаем удаление только автору задачи ИЛИ владельцу проекта, к которому относится задача.
+
+        
+        # Вариант 2: Если у задачи нет поля 'author', проверяем владельца проекта
+        # (удалить задачу может тот, кто владеет проектом)
+        return task.project.owner == self.request.user
+
 
 class TaskUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Task
