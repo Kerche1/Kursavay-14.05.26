@@ -9,9 +9,6 @@
     {% endif %}
 
     <form method="post">
-        <div class="text-center mt-3">
-    Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a>
-</div>
         {% csrf_token %}
         <div class="mb-3">
             <label>Логин</label>
@@ -23,5 +20,10 @@
         </div>
         <button type="submit" class="btn btn-primary w-100">Войти</button>
     </form>
+    
+    <!-- Ссылка перенесена НАД формой (после её закрытия) -->
+    <div class="text-center mt-3">
+        Нет аккаунта? <a href="{% url 'register' %}">Зарегистрироваться</a>
+    </div>
 </div>
 {% endblock %}
