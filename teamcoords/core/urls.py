@@ -9,6 +9,7 @@ urlpatterns = [
     # Задачи
     path('tasks/', views.TaskListView.as_view(), name='task-list'),
     path('task/create/', views.TaskCreateView.as_view(), name='task-create'),
+    path('task/<int:pk>/', views.TaskDetailView.as_view(), name='task-detail'),
     path('task/<int:pk>/delete/', views.TaskDeleteView.as_view(), name='task-delete'),
     path('task/<int:pk>/update/', views.TaskUpdateView.as_view(), name='task-update'),
     path('project/<int:pk>/', views.ProjectDetailView.as_view(), name='project-detail'),
