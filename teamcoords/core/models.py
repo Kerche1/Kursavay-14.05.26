@@ -38,7 +38,7 @@ class Task(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='tasks')
     title = models.CharField("Название задачи", max_length=200)
     description = models.TextField("Описание", blank=True)
-    status = models.CharField("Статус", max_length=20, choices=STATUS_CHOICES, default='new')
+    status = models.CharField("Статус", max_length=20, choices=STATUS_CHOICES, default='active')
     assigned_to = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
     deadline = models.DateField("Срок выполнения", null=True, blank=True)
     created_at = models.DateTimeField("Дата создания", auto_now_add=True)
