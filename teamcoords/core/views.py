@@ -138,14 +138,21 @@ class TaskDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         task = self.get_object()
-        # ЛОГИКА ПРОВЕРКИ:
-        # Разрешаем удаление только автору задачи ИЛИ владельцу проекта, к которому относится задача.
-
-        
-        # Вариант 2: Если у задачи нет поля 'author', проверяем владельца проекта
+      
         # (удалить задачу может тот, кто владеет проектом)
         return task.project.owner == self.request.user
 
+class TaskDetailView(LoginRequiredMixin, DetailView):
+    model = Task
+    template_name = 'core/task_detail.html'
+    context_object_name = 'task' # Теперь в шаблоне можно обращаться к объекту как {{ task }}
+    
+    # Если нужно передавать комментарии (если они связаны с задачей)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Предполагаем, что у задачи есть related_name='comments'
+        context['comments'] = self.object.comments.all().order_by('-created_at')
+        return context
 
 class TaskUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Task
