@@ -60,9 +60,9 @@ class ProjectDetailView(LoginRequiredMixin, DetailView):
 
 
 class ProjectDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
-    model = task
-    template_name = 'core/task_confirm_delete.html'
-    success_url = reverse_lazy('task-list')
+    model = Project
+    template_name = 'core/project_confirm_delete.html'
+    success_url = reverse_lazy('project-list')
 
     def test_func(self):
         return self.get_object().owner == self.request.user
