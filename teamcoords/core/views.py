@@ -25,7 +25,7 @@ class ProjectListView(LoginRequiredMixin, ListView):
 class ProjectCreateView(LoginRequiredMixin, CreateView):
     model = Project
     form_class = ProjectForm
-    fields = ['title', 'description', 'status']
+    fields = ['title', 'description']
     template_name = 'core/project_form.html'
     success_url = reverse_lazy('project-list')
 
