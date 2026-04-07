@@ -22,14 +22,12 @@
         
         <div class="btn-group">
             {% if not project.is_closed %}
-                <!-- Кнопка Добавить задачу (только если проект открыт) -->
                 <a href="{% url 'task-create' %}?project={{ project.id }}" class="btn btn-primary">
                     + Добавить задачу
                 </a>
             {% endif %}
 
             {% if request.user == project.owner %}
-                <!-- Кнопки владельца -->
                 {% if not project.is_closed %}
                     <a href="{% url 'project-close' project.pk %}" class="btn btn-warning" 
                        onclick="return confirm('Вы уверены? После закрытия редактирование задач будет запрещено.');">
@@ -50,7 +48,6 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <span><strong>Команда проекта</strong></span>
             {% if request.user == project.owner and not project.is_closed %}
-            <!-- Форма добавления участника (только для владельца и в открытом проекте) -->
             <form action="{% url 'add-member' project.pk %}" method="post" class="d-flex gap-2">
                 {% csrf_token %}
                 <select name="user_id" class="form-select form-select-sm" style="width: auto;">
@@ -112,12 +109,9 @@
                         <td>{{ task.assigned_to.username|default:"Не назначен" }}</td>
                         <td>{{ task.deadline|default:"Не указан" }}</td>
                         <td>
-                            <!-- Логика доступа к задаче -->
                             {% if project.is_closed %}
-                                <!-- Если проект закрыт - только чтение -->
                                 <span class="text-muted small">Только чтение</span>
                             {% else %}
-                                <!-- Если проект открыт - можно редактировать -->
                                 <a href="{% url 'task-update' task.pk %}" class="btn btn-sm btn-outline-primary">
                                     Открыть
                                 </a>
@@ -138,27 +132,29 @@
             </table>
         </div>
     </div>
-</div>
-<!-- История изменений проекта -->
-<div class="card mt-4">
-    <div class="card-header">
-        <strong>История изменений</strong>
+
+    <!-- История изменений проекта (теперь внутри контейнера) -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <strong>История изменений</strong>
+        </div>
+        <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+            <ul class="list-group list-group-flush">
+                {% for log in history %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge bg-light text-dark me-2">{{ log.created_at|date:"d.m H:i" }}</span>
+                        <strong>{{ log.user.username|default:"Система" }}:</strong>
+                        {{ log.description }}
+                    </div>
+                    <small class="text-muted">{{ log.get_action_type_display }}</small>
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted text-center">История пуста</li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
-    <div class="card-body" style="max-height: 300px; overflow-y: auto;">
-        <ul class="list-group list-group-flush">
-            {% for log in history %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="badge bg-light text-dark me-2">{{ log.created_at|date:"d.m H:i" }}</span>
-                    <strong>{{ log.user.username|default:"Система" }}:</strong>
-                    {{ log.description }}
-                </div>
-                <small class="text-muted">{{ log.get_action_type_display }}</small>
-            </li>
-            {% empty %}
-            <li class="list-group-item text-muted text-center">История пуста</li>
-            {% endfor %}
-        </ul>
-    </div>
-</div>
+
+</div> <!-- Закрывающий тег основного контейнера -->
 {% endblock %}
