@@ -1,42 +1,122 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Список задач</h2>
-    <a href="{% url 'task-create' %}" class="btn btn-success">Добавить задачу</a>
-</div>
+<div class="container-fluid">
+    <div class="card shadow-sm">
+        <!-- Заголовок карточки -->
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 text-primary">📋 Список задач</h4>
+            <a href="{% url 'task-create' %}" class="btn btn-success">
+                <i class="bi bi-plus-lg"></i> Добавить задачу
+            </a>
+        </div>
+        
+        <div class="card-body p-0">
+            <!-- table-responsive делает таблицу прокручиваемой на мобильных -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 30%;">Задача</th>
+                            <th style="width: 15%;">Проект</th>
+                            <th style="width: 15%;">Статус</th>
+                            <th style="width: 15%;">Исполнитель</th>
+                            <th style="width: 10%;">Срок</th>
+                            <th style="width: 15%; text-align: right;">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in object_list %}
+                        <tr>
+                            <!-- Название задачи как ссылка -->
+                            <td>
+                                <a href="{% url 'task-detail' task.pk %}" class="text-decoration-none fw-bold text-dark">
+                                    {{ task.title }}
+                                </a>
+                                {% if task.description %}
+                                    <br><small class="text-muted text-truncate d-inline-block" style="max-width: 250px;">{{ task.description|truncatewords:5 }}</small>
+                                {% endif %}
+                            </td>
+                            
+                            <td>
+                                <span class="badge bg-light text-dark border">{{ task.project.title }}</span>
+                            </td>
+                            
+                            <td>
+                                <span class="badge 
+                                    {% if task.status == 'done' %}bg-success
+                                    {% elif task.status == 'in_progress' %}bg-warning text-dark
+                                    {% elif task.status == 'new' %}bg-info
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ task.get_status_display }}
+                                </span>
+                            </td>
+                            
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center me-2" style="width: 32px; height: 32px; font-size: 12px;">
+                                        {{ task.assigned_to.username|slice:":1"|upper|default:"?" }}
+                                    </div>
+                                    <small class="d-none d-md-block">{{ task.assigned_to.username|default:"Не назначен" }}</small>
+                                </div>
+                            </td>
 
-<table class="table table-hover">
-    <thead>
-        <tr>
-            <th>Задача</th>
-            <th>Проект</th>
-            <th>Статус</th>
-            <th>Исполнитель</th>
-            <th>Действия</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for task in object_list %}
-        <tr>
-            <td>{{ task.title }}</td>
-            <td>{{ task.project.title }}</td>
-            <td>
-                <span class="badge 
-                    {% if task.status == 'done' %}bg-success
-                    {% elif task.status == 'in_progress' %}bg-warning
-                    {% else %}bg-secondary{% endif %}">
-                    {{ task.get_status_display }}
-                </span>
-            </td>
-            <td>{{ task.assigned_to.username|default:"Не назначен" }}</td>
-            <td>
-                <a href="{% url 'task-update' task.pk %}" class="btn btn-sm btn-outline-primary">Редактировать</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="5" class="text-center">Задач нет</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+                            <td>
+                                {% if task.deadline %}
+                                    <small class="{% if task.deadline < today %}text-danger fw-bold{% else %}text-muted{% endif %}">
+                                        {{ task.deadline|date:"d.m.Y" }}
+                                    </small>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'task-update' task.pk %}" class="btn btn-sm btn-outline-primary" title="Редактировать">
+                                        ✏️
+                                    </a>
+                                    <!-- Не забудьте добавить URL для удаления -->
+                                    <a href="{% url 'task-delete' task.pk %}" class="btn btn-sm btn-outline-danger" title="Удалить" onclick="return confirm('Удалить задачу?')">
+                                        🗑️
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="text-muted">
+                                    <h3>📭</h3>
+                                    <p>Задач нет. Создайте первую!</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Футер карточки (пагинация) -->
+        {% if is_paginated %}
+        <div class="card-footer bg-white">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1">Начало</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Пред.</a></li>
+                    {% endif %}
+                    
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">След.</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Конец</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}
