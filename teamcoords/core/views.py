@@ -28,8 +28,15 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('project-list')
 
     def form_valid(self, form):
-         form.instance.owner = self.request.user
-        response = super().form_valid(form)
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        # Это напечатает ошибки прямо в логи Render
+        print("ОШИБКИ СОЗДАНИЯ ПРОЕКТА:")
+        print(form.errors)
+        return super().form_invalid(form)
+        
         # Логируем создание
         ActionLog.objects.create(
             project=self.object,
@@ -39,11 +46,6 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
         )
         return response
 
-    def form_invalid(self, form):
-        # Это напечатает ошибки прямо в логи Render
-        print("ОШИБКИ СОЗДАНИЯ ПРОЕКТА:")
-        print(form.errors)
-        return super().form_invalid(form)
 
 
 class ProjectDetailView(LoginRequiredMixin, DetailView):
